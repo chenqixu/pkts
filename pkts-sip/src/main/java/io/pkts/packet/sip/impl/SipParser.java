@@ -5,6 +5,7 @@ package io.pkts.packet.sip.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.IPCheck;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.CSeqHeader;
@@ -1344,8 +1345,10 @@ public class SipParser {
         }
 
         final int index = buffer.getReaderIndex();
+        List<Byte> via_host_port_byteList = new ArrayList<>();// 支持ipv6, cqx add
         while (indexOfSemi == 0 && buffer.hasReadableBytes() && ++count < MAX_LOOK_AHEAD) {
             final byte b = buffer.readByte();
+            via_host_port_byteList.add(b);// 支持ipv6, cqx add
             if (b == SipParser.SEMI) {
                 indexOfSemi = count;
             } else if (b == SipParser.COLON) {
@@ -1354,6 +1357,17 @@ public class SipParser {
                 readerIndexOfLastColon = buffer.getReaderIndex();
             }
         }
+        //=========================
+        // 支持ipv6, cqx add
+        byte[] via_host_port_bytes = new byte[via_host_port_byteList.size()];
+        for (int i = 0; i < via_host_port_byteList.size(); i++) {
+            via_host_port_bytes[i] = via_host_port_byteList.get(i);
+        }
+        String via_host_port = new String(via_host_port_bytes);
+        via_host_port = via_host_port.replace(";", "");
+        via_host_port = via_host_port.replace("[", "");
+        via_host_port = via_host_port.replace("]", "");
+        //=========================
 
         if (count == 0) {
             return null;
@@ -1388,6 +1402,15 @@ public class SipParser {
             if (result[2] == null || ((Buffer) result[2]).isEmpty()) {
                 throw new SipParseException(readerIndexOfLastColon + 1, "Expected port after colon");
             }
+        } else if (IPCheck.isValidIpv6Addr(via_host_port)) {
+            buffer.readBytes(count - 1);// 需要读一下，要不然下面的result[3]会有问题，并且需要以;开头
+            String[] via_host_port_arr = via_host_port.split(":", -1);
+            String port = via_host_port_arr[via_host_port_arr.length - 1];
+            String host = via_host_port.replace(":" + port, "");
+            // host
+            result[1] = Buffers.wrap(host);
+            // port
+            result[2] = Buffers.wrap(port);
         } else {
             // indication an strange number of colons. May be the strange
             // ipv4 address after ipv6 thing which we currently dont handle
