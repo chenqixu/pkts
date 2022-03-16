@@ -9,14 +9,13 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * A buffer directly backed by a byte-array
  * 
  * @author jonas@jonasborjesson.com
  */
-public final class ByteBuffer extends AbstractBuffer {
+public class ByteBuffer extends AbstractBuffer {
 
     /**
      * The actual buffer
@@ -87,6 +86,24 @@ public final class ByteBuffer extends AbstractBuffer {
     @Override
     public boolean isEmpty() {
         return getReadableBytes() == 0;
+    }
+
+    /**
+     * Sub-classes should override this method to return their specific version.
+     *
+     * TODO: should perhaps re-structure ByteBuffer into a new base class (DirectBuffer ala Netty?)
+     * TODO: should probably also have this one return a T extends Buffer or something
+     *
+     * @param readerIndex
+     * @param lowerBoundary
+     * @param upperBoundary
+     * @param writerIndex
+     * @param buffer
+     * @return
+     */
+    protected Buffer createBuffer(final int readerIndex, final int lowerBoundary, final int upperBoundary,
+                                  final int writerIndex, final byte[] buffer) {
+        return new ByteBuffer(0, lowerBoundary, upperBoundary, writerIndex, buffer);
     }
 
     /**
@@ -321,14 +338,14 @@ public final class ByteBuffer extends AbstractBuffer {
                 // signifcant bits.
 
                  if (a1 != b1) {
-                     if (ignoreCase &&
-                             ((a1 >= 'A' && a1 <= 'Z') || (a1 >= 'a' && a1 <= 'z')) &&
-                             ((b1 >= 'A' && b1 <= 'Z') || (b1 >= 'a' && b1 <= 'z')) &&
-                             (a1 & 0x1f) == (b1 & 0x1f)) {
-                         continue;
-                     }
-                     return false;
-                 }
+                    if (ignoreCase &&
+                        ((a1 >= 'A' && a1 <= 'Z') || (a1 >= 'a' && a1 <= 'z')) &&
+                        ((b1 >= 'A' && b1 <= 'Z') || (b1 >= 'a' && b1 <= 'z')) &&
+                        (a1 & 0x1f) == (b1 & 0x1f)) {
+                          continue;
+                    }
+                    return false;
+                }
             }
 
             return true;
@@ -361,7 +378,22 @@ public final class ByteBuffer extends AbstractBuffer {
 
     @Override
     public String toString() {
-        return new String(getArray(), StandardCharsets.UTF_8);
+        return toUTF8String();
+    }
+
+    @Override
+    public String toUTF8String() {
+        try {
+            return new String(getArray(), "UTF-8");
+        } catch (final UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public ReadOnlyBuffer toReadOnly() {
+        final byte[] clone = getArray();
+        return ReadOnlyBuffer.of(clone);
     }
 
     @Override

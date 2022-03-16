@@ -29,6 +29,11 @@
       <artifactId>pkts-sdp</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.pkts</groupId>
+      <artifactId>pkts-diameter</artifactId>
+    </dependency>
+
     <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>

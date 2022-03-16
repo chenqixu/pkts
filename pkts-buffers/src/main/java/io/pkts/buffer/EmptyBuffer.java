@@ -11,7 +11,7 @@ import java.io.UnsupportedEncodingException;
  * 
  * @author jonas@jonasborjesson.com
  */
-public class EmptyBuffer implements Buffer {
+public class EmptyBuffer implements ReadOnlyBuffer {
 
     private static final String THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT = "This is an empty buffer. Cant write to it";
     private static final String THIS_BUFFER_IS_EMPTY = "This buffer is empty";
@@ -23,6 +23,11 @@ public class EmptyBuffer implements Buffer {
      */
     protected EmptyBuffer() {
         // only Buffers should create this one
+    }
+
+    @Override
+    public ReadOnlyBuffer toReadOnly() {
+        return this;
     }
 
     /**
@@ -206,6 +211,11 @@ public class EmptyBuffer implements Buffer {
         throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
+    @Override
+    public long getUnsignedInt(final int index) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -243,14 +253,6 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public short readUnsignedByte() throws IndexOutOfBoundsException, IOException {
-        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public long getUnsignedInt(final int index) throws IndexOutOfBoundsException {
         throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
@@ -304,6 +306,11 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public String toString() {
+        return "";
+    }
+
+    @Override
+    public String toUTF8String() {
         return "";
     }
 
@@ -433,6 +440,7 @@ public class EmptyBuffer implements Buffer {
     public void setInt(final int index, final int value) throws IndexOutOfBoundsException {
         throw new IndexOutOfBoundsException("Sorry, this buffer is empty");
     }
+
 
     @Override
     public int parseToInt() throws NumberFormatException {

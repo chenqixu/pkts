@@ -4,7 +4,8 @@
 package io.pkts.buffer;
 
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
+import java.util.function.Function;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -77,7 +78,23 @@ public final class Buffers {
             return Buffers.EMPTY_BUFFER;
         }
 
-        return Buffers.wrap(s.getBytes(StandardCharsets.UTF_8));
+        return Buffers.wrap(s.getBytes(Charset.forName("UTF-8")));
+    }
+
+    /**
+     * Create a new read-only buffer based on the supplied string. Naturally, the returned buffer
+     * cannot be written to.
+     */
+    public static ReadOnlyBuffer wrapAsReadOnly(final String s) {
+        if (s == null) {
+            throw new IllegalArgumentException("String cannot be null");
+        }
+
+        return new ReadOnlyByteBuffer(s.getBytes(Charset.forName("UTF-8")));
+    }
+
+    private static <T extends Buffer> T internalWrap(final String s, final Function<String, T> f) {
+        return f.apply(s);
     }
 
     public static Buffer wrap(final InputStream is) {
@@ -111,6 +128,14 @@ public final class Buffers {
         }
 
         return new ByteBuffer(buffer);
+    }
+
+    public static ReadOnlyBuffer wrapAsReadOnly(final byte[] buffer) {
+        if (buffer == null || buffer.length == 0) {
+            throw new IllegalArgumentException("the buffer cannot be null or empty");
+        }
+
+        return ReadOnlyBuffer.of(buffer);
     }
 
     /**
@@ -199,6 +224,26 @@ public final class Buffers {
         if (buffer == null || buffer.isEmpty()) {
             throw new IllegalArgumentException(msg);
         }
+    }
+
+    public static ReadOnlyBuffer wrapAsReadOnly(final byte[] buffer, final int lowerBoundary, final int upperBoundary) {
+        if (buffer == null || buffer.length == 0) {
+            throw new IllegalArgumentException("the buffer cannot be null or empty");
+        }
+        if (upperBoundary > buffer.length) {
+            throw new IllegalArgumentException("The upper boundary cannot exceed the length of the buffer");
+        }
+        if (lowerBoundary >= upperBoundary) {
+            throw new IllegalArgumentException("The lower boundary must be lower than the upper boundary");
+        }
+
+        if (lowerBoundary < 0) {
+            throw new IllegalArgumentException("The lower boundary must be a equal or greater than zero");
+        }
+
+        final int readerIndex = 0;
+        final int writerIndex = upperBoundary;
+        return new ReadOnlyByteBuffer(readerIndex, lowerBoundary, upperBoundary, writerIndex, buffer);
     }
 
     /**
