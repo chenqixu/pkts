@@ -52,7 +52,7 @@ public class ByteBuffer extends AbstractBuffer {
         checkIndex(this.lowerBoundary + stop - 1);
         final int upperBoundary = this.lowerBoundary + stop;
         final int writerIndex = upperBoundary;
-        return new ByteBuffer(0, this.lowerBoundary + start, upperBoundary, writerIndex, this.buffer);
+        return createBuffer(0, this.lowerBoundary + start, upperBoundary, writerIndex, this.buffer);
     }
 
     /**
@@ -69,7 +69,7 @@ public class ByteBuffer extends AbstractBuffer {
         this.readerIndex += length;
         final int upperBoundary = this.readerIndex + this.lowerBoundary;
         final int writerIndex = upperBoundary;
-        return new ByteBuffer(0, lowerBoundary, upperBoundary, writerIndex, this.buffer);
+        return createBuffer(0, lowerBoundary, upperBoundary, writerIndex, this.buffer);
     }
 
     /**
