@@ -44,7 +44,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <netty.version>4.1.42.Final</netty.version>
-    <snice.version>0.1.2-SNAPSHOT</snice.version>
+    <snice.version>0.1.2</snice.version>
   </properties>
 
     <modules>
